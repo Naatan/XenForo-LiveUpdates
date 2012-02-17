@@ -21,7 +21,7 @@ var AjaxPolling = new function()
 
 	this.getUnread = function()
 	{
-		$.getJSON(base + 'poll/unread', $this.checkUnread);
+		$.getJSON(base + 'index.php/poll/unread', $this.checkUnread);
 	};
 
 	this.checkUnread = function(data)
