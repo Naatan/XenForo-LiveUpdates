@@ -9,6 +9,10 @@ var AjaxPolling = new function()
 	};
 
 	var $this = this;
+
+	var alerted = {};
+
+	var polls = 0;
 	
 	this.init = function()
 	{
@@ -33,12 +37,14 @@ var AjaxPolling = new function()
 
 		if (data.conversationsUnread != counters.conversations)
 		{
-			$this.setConversationsUnread(data.conversationsUnread);
+			$this.setBalloonCount("Conversations", data.conversationsUnread, "inbox");
+			$this.reloadMenu('inbox');
 		}
 
 		if (data.alertCount != counters.alerts)
 		{
-			$this.setAlertCount(data.alertCount);
+			$this.setBalloonCount("Alerts", data.alertCount, "alerts");
+			$this.reloadMenu('alerts');
 		}
 	};
 
@@ -54,14 +60,77 @@ var AjaxPolling = new function()
 		}
 	};
 
-	this.setConversationsUnread = function(count)
+	this.reloadMenu = function(className)
 	{
-		return $this.setBalloonCount("Conversations", count, "inbox");
+		var menu = $("."+className+".Popup").data("XenForo.PopupMenu");
+		menu.resetLoader();
+
+		menu.loading = XenForo.ajax(
+			menu.contentSrc, '',
+			function(data) {
+				menu.loadSuccess(data);
+				menu.$control.addClass('PopupClosed').removeClass('PopupOpen');
+
+				if (className == "alerts")
+				{
+					$this.showAlerts(menu);
+				}
+				else
+				{
+					$this.showUnreads(menu);
+				}
+			},
+			{ type: 'GET' }
+		);
+
+		menu.$menu.find('.Progress').addClass('InProgress');
 	};
 
-	this.setAlertCount = function(count)
+	this.showAlerts = function(menu, preload)
 	{
-		return $this.setBalloonCount("Alerts", count, "alerts");
+		menu.$menu.find("li.Alert").each(function()
+		{
+			var alertId = $(this).attr("id");
+
+			if (alerted[alertId] !== undefined)
+			{
+				return;
+			}
+
+			alerted[alertId] = true;
+
+			if (preload === undefined)
+			{
+				var elem = $("<div>").append($(this).find("h3").clone());
+
+				XenForo.stackAlert(elem , 5000);
+			}
+		});
+	};
+
+	this.showUnreads = function(menu, preload)
+	{
+		menu.$menu.find("li.unread").each(function()
+		{
+			var unreadId = $(this).find("h3 a.PopupItemLink").attr("href");
+
+			if (alerted[unreadId] !== undefined)
+			{
+				return;
+			}
+
+			alerted[unreadId] = true;
+
+			if (preload === undefined)
+			{
+				var elem = $("<div>");
+				elem.append($(this).find("h3").clone());
+				elem.find("h3").prepend("Conversation Updated: ");
+				elem.append($(this).find("p.muted").clone());
+
+				XenForo.stackAlert(elem, 5000);
+			}
+		});
 	};
 
 	this.setBalloonCount = function(balloon, count, parent)
@@ -81,7 +150,11 @@ var AjaxPolling = new function()
 		}
 
 		var PopupMenu	= $("#"+balloon+"Menu_Counter").closest('.Popup').data('XenForo.PopupMenu');
-		PopupMenu.resetLoader();
+		
+		if (PopupMenu !== undefined)
+		{
+			PopupMenu.resetLoader();
+		}
 
 		counters[balloon.toLowerCase()] = count;
 	};
@@ -89,4 +162,3 @@ var AjaxPolling = new function()
 	$(document).ready(this.init);
 
 };
-
