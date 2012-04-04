@@ -52,11 +52,11 @@ var AjaxPolling = new function()
 	{
 		if ($("#ConversationsMenu_Counter").length === 1)
 		{
-			counters.conversations = $("#ConversationsMenu_Counter").text().trim();
+			counters.conversations = $.trim($("#ConversationsMenu_Counter").text());
 		}
 		if ($("#AlertsMenu_Counter").length === 1)
 		{
-			counters.alerts = $("#AlertsMenu_Counter").text().trim();
+			counters.alerts = $.trim($("#AlertsMenu_Counter").text());
 		}
 	};
 
@@ -162,3 +162,4 @@ var AjaxPolling = new function()
 	$(document).ready(this.init);
 
 };
+
