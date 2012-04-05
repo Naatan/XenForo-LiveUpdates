@@ -1,4 +1,4 @@
-var AjaxPolling = new function()
+AjaxPolling = new function()
 {
 
 	var base;
@@ -17,6 +17,12 @@ var AjaxPolling = new function()
 	this.init = function()
 	{
 		base = $("base").attr("href");
+		
+		var alertedCookie = $.getCookie('alerted');
+		if (alertedCookie != null)
+		{
+			alerted = JSON.parse(alertedCookie);
+		}
 
 		$this.detectUnread();
 
@@ -38,13 +44,13 @@ var AjaxPolling = new function()
 		if (data.conversationsUnread != counters.conversations)
 		{
 			$this.setBalloonCount("Conversations", data.conversationsUnread, "inbox");
-			$this.reloadMenu('inbox');
+			$this.showAlertPopin('Conversations');
 		}
 
 		if (data.alertCount != counters.alerts)
 		{
 			$this.setBalloonCount("Alerts", data.alertCount, "alerts");
-			$this.reloadMenu('alerts');
+			$this.showAlertPopin('Alerts');
 		}
 	};
 
@@ -60,76 +66,58 @@ var AjaxPolling = new function()
 		}
 	};
 
-	this.reloadMenu = function(className)
+	this.showAlertPopin = function(name)
 	{
-		var menu = $("."+className+".Popup").data("XenForo.PopupMenu");
-		menu.resetLoader();
-
-		menu.loading = XenForo.ajax(
-			menu.contentSrc, '',
-			function(data) {
-				menu.loadSuccess(data);
-				menu.$control.addClass('PopupClosed').removeClass('PopupOpen');
-
-				if (className == "alerts")
+		XenForo.ajax(
+			base + 'index.php/poll/unread' + name, '',
+			function(data)
+			{
+				if (name == "Alerts")
 				{
-					$this.showAlerts(menu);
+					$this.showAlerts(data.templateHtml);
 				}
 				else
 				{
-					$this.showUnreads(menu);
+					$this.showUnreads(data.templateHtml);
 				}
 			},
 			{ type: 'GET' }
 		);
-
-		menu.$menu.find('.Progress').addClass('InProgress');
 	};
 
-	this.showAlerts = function(menu, preload)
+	this.showAlerts = function(html)
 	{
-		menu.$menu.find("li.Alert").each(function()
+		$(html).find("li.Alert").each(function()
 		{
 			var alertId = $(this).attr("id");
 
-			if (alerted[alertId] !== undefined)
+			if ( ! $this.logAlert(alertId))
 			{
 				return;
 			}
 
-			alerted[alertId] = true;
-
-			if (preload === undefined)
-			{
-				var elem = $("<div>").append($(this).find("h3").clone());
-
-				XenForo.stackAlert(elem , 5000);
-			}
+			var elem = $("<div>").append($(this).find("h3").clone());
+			XenForo.stackAlert(elem , 5000);
 		});
 	};
 
-	this.showUnreads = function(menu, preload)
+	this.showUnreads = function(html)
 	{
-		menu.$menu.find("li.unread").each(function()
+		$(html).find("li.unread").each(function()
 		{
 			var unreadId = $(this).find("h3 a.PopupItemLink").attr("href");
 
-			if (alerted[unreadId] !== undefined)
+			if ( ! $this.logAlert(unreadId))
 			{
 				return;
 			}
 
-			alerted[unreadId] = true;
+			var elem = $("<div>");
+			elem.append($(this).find("h3").clone());
+			elem.find("h3").prepend("Conversation Updated: ");
+			elem.append($(this).find("p.muted").clone());
 
-			if (preload === undefined)
-			{
-				var elem = $("<div>");
-				elem.append($(this).find("h3").clone());
-				elem.find("h3").prepend("Conversation Updated: ");
-				elem.append($(this).find("p.muted").clone());
-
-				XenForo.stackAlert(elem, 5000);
-			}
+			XenForo.stackAlert(elem, 5000);
 		});
 	};
 
@@ -158,7 +146,23 @@ var AjaxPolling = new function()
 
 		counters[balloon.toLowerCase()] = count;
 	};
-
+	
+	this.logAlert = function(id)
+	{
+		if (alerted[id] !== undefined)
+		{
+			return false;
+		}
+		
+		alerted[id] = true;
+		
+		var expires = new Date();
+		expires.setDate(expires.getDate() + 7);
+		$.setCookie('alerted', JSON.stringify(alerted), expires);
+		
+		return true;
+	};
+	
 	$(document).ready(this.init);
 
 };
