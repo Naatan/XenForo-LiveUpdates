@@ -2,6 +2,7 @@ AjaxPolling = new function()
 {
 
 	var base;
+	var $ = jQuery;
 
 	var counters = {
 		conversations:	0,
