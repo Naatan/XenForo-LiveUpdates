@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<addon addon_id="AjaxPolling" title="Live Updates" version_string="1.0" version_id="5" url="" install_callback_class="" install_callback_method="" uninstall_callback_class="" uninstall_callback_method="">
+  <admin_navigation/>
+  <admin_permissions/>
+  <admin_style_properties/>
+  <admin_templates/>
+  <code_events/>
+  <code_event_listeners>
+    <listener event_id="template_create" execute_order="10" callback_class="LiveUpdate_Listener" callback_method="templateCreate" active="1" description=""/>
+    <listener event_id="template_post_render" execute_order="10" callback_class="LiveUpdate_Listener" callback_method="templatePostRender" active="1" description=""/>
+  </code_event_listeners>
+  <cron/>
+  <email_templates/>
+  <optiongroups>
+    <option option_id="liveUpdateInterval" edit_format="spinbox" data_type="unsigned_integer" can_backup="1">
+      <default_value>10</default_value>
+      <edit_format_params></edit_format_params>
+      <sub_options></sub_options>
+      <relation group_id="performance" display_order="910"/>
+    </option>
+  </optiongroups>
+  <permissions>
+    <permission_groups/>
+    <permissions/>
+    <interface_groups/>
+  </permissions>
+  <phrases>
+    <phrase title="option_liveUpdateInterval" version_id="5" version_string="1.2.0"><![CDATA[Live Update Interval]]></phrase>
+    <phrase title="option_liveUpdateInterval_explain" version_id="5" version_string="1.2.0"><![CDATA[This is the minimum time the client will wait before asking for another request for updates from the server.
+In seconds.]]></phrase>
+  </phrases>
+  <route_prefixes>
+    <route_type type="public">
+      <prefix original_prefix="liveupdate" class="LiveUpdate_Route_Prefix_LiveUpdate" build_link="none"/>
+    </route_type>
+  </route_prefixes>
+  <style_properties/>
+  <templates/>
+  <bb_code_media_sites/>
+  <template_modifications/>
+</addon>
