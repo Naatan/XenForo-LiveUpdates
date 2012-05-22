@@ -1,6 +1,6 @@
 <?php
 
-class AjaxPolling_RoutePrefix implements XenForo_Route_Interface
+class LiveUpdate_Route_Prefix_LiveUpdate implements XenForo_Route_Interface
 {
 	
 	/**
@@ -14,12 +14,7 @@ class AjaxPolling_RoutePrefix implements XenForo_Route_Interface
 	 */
 	public function match($routePath, Zend_Controller_Request_Http $request, XenForo_Router $router)
 	{
-		$action = $router->resolveActionWithStringParam($routePath, $request, 'action');
-
-		$routeMatch = $router->getRouteMatch('AjaxPolling_ControllerPublic', $action);
-		$routeMatch->setResponseType('raw');
-
-		return $routeMatch;
+		return $router->getRouteMatch('LiveUpdate_ControllerPublic_Update', $routePath);
 	}
 
 }
